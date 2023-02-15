@@ -27,5 +27,7 @@ class SignUpActivity : AppCompatActivity() {
             startActivity(returnIntent)
             finish()
         }
+
+
     }
 }

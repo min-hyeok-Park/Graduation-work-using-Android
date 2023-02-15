@@ -1,4 +1,4 @@
-package com.example.icontest2.fragments
+package com.example.icontest2
 
 import android.Manifest
 import android.content.Intent
@@ -7,23 +7,22 @@ import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
-import com.example.icontest2.databinding.FragmentHomeBinding
-import com.example.icontest2.databinding.FragmentMapBinding
+import com.example.icontest2.databinding.ActivityMainBinding
+import com.example.icontest2.databinding.ActivityMapBinding
+import com.example.icontest2.databinding.ActivitySignUpBinding
 import com.google.android.gms.location.*
+import com.google.android.gms.location.R
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -36,8 +35,9 @@ import com.google.android.material.snackbar.Snackbar
 import java.io.IOException
 import java.util.*
 
-class MapFragment : AppCompatActivity(), OnMapReadyCallback,
+class MapActivity : AppCompatActivity(), OnMapReadyCallback,
     ActivityCompat.OnRequestPermissionsResultCallback {
+    private lateinit var binding : ActivityMapBinding
     private var mMap: GoogleMap? = null
     private var currentMarker: Marker? = null
     var needRequest = false
@@ -54,24 +54,6 @@ class MapFragment : AppCompatActivity(), OnMapReadyCallback,
     private var location: Location? = null
     private var mLayout // Snackbar 사용하기 위해서는 View가 필요합니다.
             : View? = null
-    /*
-    private var mbinding : FragmentMapBinding? = null
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val binding = FragmentMapBinding.inflate(inflater, container, false)
-        mbinding = binding
-        return mbinding?.root
-    }
-
-    override fun onDestroyView() {
-        mbinding = null
-        super.onDestroyView()
-    }
-    */
 
     // (참고로 Toast에서는 Context가 필요했습니다.)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,8 +62,9 @@ class MapFragment : AppCompatActivity(), OnMapReadyCallback,
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         )
-        setContentView(com.example.icontest2.R.layout.fragment_map)
-        mLayout = findViewById(com.example.icontest2.R.id.mapFragment)
+        binding = ActivityMapBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        mLayout = binding.layoutMain
         locationRequest = LocationRequest()
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
             .setInterval(UPDATE_INTERVAL_MS.toLong())
@@ -90,8 +73,15 @@ class MapFragment : AppCompatActivity(), OnMapReadyCallback,
         builder.addLocationRequest(locationRequest!!)
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         val mapFragment = supportFragmentManager
-            .findFragmentById(com.example.icontest2.R.id.map) as SupportMapFragment?
+            .findFragmentById(com.example.icontest2.R.id.mapFragment) as SupportMapFragment?
         mapFragment!!.getMapAsync(this)
+
+
+        binding.mapArBtn.setOnClickListener {
+            val intent = packageManager.getLaunchIntentForPackage("com.vuforia.engine.coresamples")
+            intent!!.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) //
+            startActivity(intent)
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -134,7 +124,7 @@ class MapFragment : AppCompatActivity(), OnMapReadyCallback,
                 )
                     .setAction("확인") { // 3-3. 사용자게에 퍼미션 요청을 합니다. 요청 결과는 onRequestPermissionResult에서 수신됩니다.
                         ActivityCompat.requestPermissions(
-                            this@MapFragment, REQUIRED_PERMISSIONS,
+                            this@MapActivity, REQUIRED_PERMISSIONS,
                             PERMISSIONS_REQUEST_CODE
                         )
                     }.show()
@@ -169,7 +159,7 @@ class MapFragment : AppCompatActivity(), OnMapReadyCallback,
                 val markerSnippet =
                     "위도:" + location!!.latitude.toString() + " 경도:" + location!!.longitude.toString()
                 Log.d(TAG, "onLocationResult : $markerSnippet")
-                Toast.makeText(this@MapFragment, "위도 - ${location!!.latitude}\n경도 - ${location!!.longitude}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MapActivity, "위도 - ${location!!.latitude}\n경도 - ${location!!.longitude}", Toast.LENGTH_SHORT).show()
 
                 //현재 위치에 마커 생성하고 이동
                 setCurrentLocation(location, markerTitle, markerSnippet)
@@ -273,8 +263,6 @@ class MapFragment : AppCompatActivity(), OnMapReadyCallback,
     }
 
     fun setDefaultLocation() {
-
-
         //디폴트 위치, Seoul
         val DEFAULT_LOCATION = LatLng(37.56, 126.97)
         val markerTitle = "위치정보 가져올 수 없음"
@@ -371,7 +359,7 @@ class MapFragment : AppCompatActivity(), OnMapReadyCallback,
 
     //여기부터는 GPS 활성화를 위한 메소드들
     private fun showDialogForLocationServiceSetting() {
-        val builder = AlertDialog.Builder(this@MapFragment)
+        val builder = AlertDialog.Builder(this@MapActivity)
         builder.setTitle("위치 서비스 비활성화")
         builder.setMessage(
             "앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n"

@@ -1,30 +1,86 @@
 package com.example.icontest2
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.NavigationUI
+import android.view.View
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.icontest2.databinding.ActivityMainBinding
-import com.kakao.util.helper.Utility
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var mBinding : ActivityMainBinding
+    init {
+        instance = this
+    }
+    companion object{
+        private var instance: MainActivity? = null
+        fun getInstance(): MainActivity?{
+            return instance
+        }
+    }
+
+    private lateinit var binding : ActivityMainBinding
+
+    private val lists = listOf(
+        ListDTO("푸드트럭1", false),
+        ListDTO("푸드트럭2", false),
+        ListDTO("푸드트럭3", false),
+        ListDTO("푸드트럭4", false),
+        ListDTO("푸드트럭5", false),
+        ListDTO("푸드트럭6", false),
+        ListDTO("푸드트럭7", false),
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(mBinding.root)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // 네비게이션들 담는 호스트
-        var navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
+        binding.mainHomeBtn.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+        binding.mainSearchBtn.setOnClickListener {
+            val intent = Intent(this, SearchActivity::class.java)
+            startActivity(intent)
+        }
+        binding.mainMapBtn.setOnClickListener {
+            val intent = Intent(this, MapActivity::class.java)
+            startActivity(intent)
+        }
+        binding.mainMyPageBtn.setOnClickListener {
+            val intent = Intent(this, MyPageActivity::class.java)
+            startActivity(intent)
+        }
 
-        // 네비게이션 컨트롤러
-        var navController = navHostFragment.navController
+        binding.mainLocationBtn.setOnClickListener {
+            val intent = Intent(this, MapActivity::class.java)
+            startActivity(intent)
+        }
 
-        // 바텀 바와 네비 묶어주기
-        NavigationUI.setupWithNavController(mBinding.bottomNav, navController)
+        binding.parentTv.setOnClickListener {
+            if (binding.layoutExpand1.visibility == View.VISIBLE) {
+                binding.layoutExpand1.visibility = View.GONE
+                binding.parentTv.setImageResource(R.drawable.baseline_expand_more_24)
+            } else {
+                binding.layoutExpand1.visibility = View.VISIBLE
+                binding.parentTv.setImageResource(R.drawable.baseline_expand_less_24)
+            }
+        }
+
+        initViews()
+
+        // val listBtn = findViewById<Button>(R.id.list_btn)
+
+
+    }
+
+    private fun initViews() {
+        binding.todoList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.todoList.adapter = ListAdapter(lists)
+    }
+
+    fun move(){
+        val intent = Intent(this, MapActivity::class.java)
+        startActivity(intent)
     }
 }
